@@ -32,8 +32,9 @@ func (p *BasePlugin) Stop() error {
 // BaseCommandPlugin :
 type BaseCommandPlugin struct {
 	BasePlugin
-	name  string
-	group string
+	name     string
+	group    string
+	synopsis string
 }
 
 // Start :
@@ -58,15 +59,15 @@ func (p *BaseCommandPlugin) Group() string {
 }
 
 // Synopsis :
-func (*BaseCommandPlugin) Synopsis() string {
-	return ""
+func (p *BaseCommandPlugin) Synopsis() string {
+	return p.synopsis
 }
 
 // Usage :
 func (p *BaseCommandPlugin) Usage() string {
 	return fmt.Sprintf(`%s
   %s
-`, p.name, p.Synopsis())
+`, p.name, p.synopsis)
 }
 
 // SetFlags :
@@ -75,9 +76,10 @@ func (*BaseCommandPlugin) SetFlags(f *flag.FlagSet) {
 }
 
 // NewBaseCommandPlugin :
-func NewBaseCommandPlugin(name string, group string) *BaseCommandPlugin {
+func NewBaseCommandPlugin(name string, group string, synopsis string) *BaseCommandPlugin {
 	return &BaseCommandPlugin{
-		name:  name,
-		group: group,
+		name:     name,
+		group:    group,
+		synopsis: synopsis,
 	}
 }

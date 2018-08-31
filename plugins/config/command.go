@@ -27,11 +27,6 @@ func (p *Plugin) Start(conf config.Configuration) error {
 	return nil
 }
 
-// Synopsis :
-func (*Plugin) Synopsis() string {
-	return "Print configurations"
-}
-
 // Dumps :
 func (p *Plugin) Dumps() (string, error) {
 	data, err := json.Marshal(p.Configuration)
@@ -49,8 +44,8 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 }
 
 // New :
-func New(name string, group string) plugins.Plugin {
+func New() plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin(name, group),
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin("confinfo", "config", "print configurations"),
 	}
 }

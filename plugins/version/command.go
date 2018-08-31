@@ -28,11 +28,6 @@ func (p *Plugin) Start(conf config.Configuration) error {
 	return nil
 }
 
-// Synopsis :
-func (p *Plugin) Synopsis() string {
-	return "Print version infomations"
-}
-
 // Execute :
 func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	fmt.Printf(
@@ -42,9 +37,9 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 }
 
 // NewVersionPlugin :
-func NewVersionPlugin(version string, buildHash string, group string) plugins.Plugin {
+func NewVersionPlugin(version string, buildHash string) plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin("version", group),
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin("version", "version", "print version infomations"),
 		version:           version,
 		buildHash:         buildHash,
 	}

@@ -25,8 +25,8 @@ func (p *DefaultPlugin) Start(conf config.Configuration) error {
 }
 
 // NewDefaultPlugin :
-func NewDefaultPlugin(group string) plugins.Plugin {
+func NewDefaultPlugin() plugins.Plugin {
 	return &DefaultPlugin{
-		group: group,
+		group: "default",
 	}
 }

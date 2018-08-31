@@ -26,11 +26,6 @@ func (p *Plugin) Start(conf config.Configuration) error {
 	return nil
 }
 
-// Synopsis :
-func (*Plugin) Synopsis() string {
-	return "Run server"
-}
-
 // Route :
 func (p *Plugin) Route(engine *gin.Engine) {
 
@@ -50,8 +45,8 @@ func (p *Plugin) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 }
 
 // New :
-func New(name string, group string) plugins.Plugin {
+func New() plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin(name, group),
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin("server", "http", "run gin server"),
 	}
 }
