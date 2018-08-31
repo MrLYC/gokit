@@ -12,9 +12,8 @@ import (
 
 // Plugin :
 type Plugin struct {
-	plugins.BasePlugin
+	*plugins.BaseCommandPlugin
 
-	group     string
 	version   string
 	buildHash string
 }
@@ -22,30 +21,16 @@ type Plugin struct {
 // Start :
 func (p *Plugin) Start(conf config.Configuration) error {
 	err := p.BasePlugin.Start(conf)
-	subcommands.Register(p, p.group)
-	return err
-}
-
-// Name :
-func (p *Plugin) Name() string {
-	return "version"
+	if err != nil {
+		return err
+	}
+	subcommands.Register(p, p.Group())
+	return nil
 }
 
 // Synopsis :
 func (p *Plugin) Synopsis() string {
 	return "Print version infomations"
-}
-
-// Usage :
-func (p *Plugin) Usage() string {
-	return `version
-  Print version infomations.
-`
-}
-
-// SetFlags :
-func (p *Plugin) SetFlags(f *flag.FlagSet) {
-
 }
 
 // Execute :
@@ -59,8 +44,8 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 // NewVersionPlugin :
 func NewVersionPlugin(version string, buildHash string, group string) plugins.Plugin {
 	return &Plugin{
-		group:     group,
-		version:   version,
-		buildHash: buildHash,
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin("version", group),
+		version:           version,
+		buildHash:         buildHash,
 	}
 }

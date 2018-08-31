@@ -1,14 +1,13 @@
-package config
+package gin
 
 import (
 	"context"
 	"flag"
 	"fmt"
 
-	"encoding/json"
-
 	"github.com/MrLYC/gokit/config"
 	"github.com/MrLYC/gokit/plugins"
+	"github.com/gin-gonic/gin"
 	"github.com/google/subcommands"
 )
 
@@ -29,22 +28,24 @@ func (p *Plugin) Start(conf config.Configuration) error {
 
 // Synopsis :
 func (*Plugin) Synopsis() string {
-	return "Print configurations"
+	return "Run server"
 }
 
-// Dumps :
-func (p *Plugin) Dumps() (string, error) {
-	data, err := json.Marshal(p.Configuration)
-	return string(data), err
+// Route :
+func (p *Plugin) Route(engine *gin.Engine) {
+
 }
 
 // Execute :
-func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	data, err := p.Dumps()
-	if err != nil {
-		panic(err)
+func (p *Plugin) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+	address := fmt.Sprintf("%v:%v", p.Configuration.GetString("http.host"), p.Configuration.GetInt("http.port"))
+	if !p.Configuration.GetBool("debug") {
+		gin.SetMode(gin.ReleaseMode)
 	}
-	fmt.Printf(data)
+
+	engine := gin.Default()
+	p.Route(engine)
+	engine.Run(address)
 	return subcommands.ExitSuccess
 }
 
