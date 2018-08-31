@@ -5,13 +5,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MrLYC/gokit/config"
 	"github.com/mrlyc/gokit/plugins/logrus"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 func TestLogrusConfigureStart(t *testing.T) {
-	conf := viper.New()
+	conf := config.NewMapConfiguration()
 	logger := log.New()
 	plugin := logrus.New(logger)
 
@@ -33,7 +33,7 @@ func TestLogrusConfigureStart(t *testing.T) {
 }
 
 func TestLogrusConfigureDefault(t *testing.T) {
-	conf := viper.New()
+	conf := config.NewMapConfiguration()
 	logger := log.New()
 	plugin := logrus.New(logger)
 
@@ -53,7 +53,7 @@ func TestLogrusConfigureDefault(t *testing.T) {
 }
 
 func TestLogrusConfigureStop(t *testing.T) {
-	conf := viper.New()
+	conf := config.NewMapConfiguration()
 	logger := log.New()
 	plugin := logrus.New(logger)
 
