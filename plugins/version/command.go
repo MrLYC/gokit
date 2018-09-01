@@ -14,6 +14,8 @@ import (
 type Plugin struct {
 	*plugins.BaseCommandPlugin
 
+	short bool
+
 	version   string
 	buildHash string
 }
@@ -28,11 +30,20 @@ func (p *Plugin) Start(conf config.Configuration) error {
 	return nil
 }
 
+// SetFlags :
+func (p *Plugin) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&p.short, "s", false, "print version only")
+}
+
 // Execute :
 func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	fmt.Printf(
-		"Version: %v, BuildHash: %v\n", p.version, p.buildHash,
-	)
+	if p.short {
+		fmt.Printf("%v\n", p.version)
+	} else {
+		fmt.Printf(
+			"Version: %v, BuildHash: %v\n", p.version, p.buildHash,
+		)
+	}
 	return subcommands.ExitSuccess
 }
 

@@ -18,8 +18,8 @@ func (p *Plugin) Dumps() (string, error) {
 }
 
 // New :
-func New(name string, group string) plugins.Plugin {
+func New() plugins.Plugin {
 	return &Plugin{
-		Plugin: config.New(name, group).(*config.Plugin),
+		Plugin: config.New().(*config.Plugin),
 	}
 }
