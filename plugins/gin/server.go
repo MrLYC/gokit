@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MrLYC/gokit/config"
+	"github.com/MrLYC/gokit/logging"
 	"github.com/MrLYC/gokit/plugins"
 	"github.com/gin-gonic/gin"
 	"github.com/google/subcommands"
@@ -40,6 +41,7 @@ func (p *Plugin) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 
 	engine := gin.Default()
 	p.Route(engine)
+	logging.Infof("http server listening on: %s", address)
 	engine.Run(address)
 	return subcommands.ExitSuccess
 }
