@@ -49,6 +49,15 @@ func (p *Plugin) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 // New :
 func New() plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin("server", "http", "run gin server"),
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin(
+			config.Attrs.GetString("plugins.gin.name"),
+			config.Attrs.GetString("plugins.gin.group"),
+			"run gin server",
+		),
 	}
+}
+
+func init() {
+	config.Attrs.SetDefault("plugins.gin.name", "server")
+	config.Attrs.SetDefault("plugins.gin.group", "http")
 }

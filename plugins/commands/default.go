@@ -9,7 +9,6 @@ import (
 // DefaultPlugin :
 type DefaultPlugin struct {
 	plugins.BasePlugin
-	group string
 }
 
 // Start :
@@ -18,15 +17,19 @@ func (p *DefaultPlugin) Start(conf config.Configuration) error {
 	if err != nil {
 		return err
 	}
-	subcommands.Register(subcommands.HelpCommand(), p.group)
-	subcommands.Register(subcommands.FlagsCommand(), p.group)
-	subcommands.Register(subcommands.CommandsCommand(), p.group)
+	subcommands.Register(subcommands.HelpCommand(), config.Attrs.GetString("plugins.commands.group.help"))
+	subcommands.Register(subcommands.FlagsCommand(), config.Attrs.GetString("plugins.commands.group.flags"))
+	subcommands.Register(subcommands.CommandsCommand(), config.Attrs.GetString("plugins.commands.group.commands"))
 	return nil
 }
 
 // NewDefaultPlugin :
 func NewDefaultPlugin() plugins.Plugin {
-	return &DefaultPlugin{
-		group: "default",
-	}
+	return &DefaultPlugin{}
+}
+
+func init() {
+	config.Attrs.SetDefault("plugins.commands.group.help", "")
+	config.Attrs.SetDefault("plugins.commands.group.flags", "")
+	config.Attrs.SetDefault("plugins.commands.group.commands", "")
 }

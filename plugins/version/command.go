@@ -50,8 +50,17 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 // NewVersionPlugin :
 func NewVersionPlugin(version string, buildHash string) plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin("version", "version", "print version infomations"),
-		version:           version,
-		buildHash:         buildHash,
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin(
+			config.Attrs.GetString("plugins.version.name"),
+			config.Attrs.GetString("plugins.version.group"),
+			"print version infomations",
+		),
+		version:   version,
+		buildHash: buildHash,
 	}
+}
+
+func init() {
+	config.Attrs.SetDefault("plugins.version.name", "version")
+	config.Attrs.SetDefault("plugins.version.group", "version")
 }

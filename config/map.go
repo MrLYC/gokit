@@ -110,3 +110,10 @@ func NewMapConfiguration() Configuration {
 		configurations: make(map[string]interface{}),
 	}
 }
+
+// Attrs :
+var Attrs Configuration
+
+func init() {
+	Attrs = NewMapConfiguration()
+}

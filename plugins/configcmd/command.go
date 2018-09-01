@@ -39,7 +39,16 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 // New :
 func New(dumpFunc func(config.Configuration) (string, error)) plugins.Plugin {
 	return &Plugin{
-		BaseCommandPlugin: plugins.NewBaseCommandPlugin("confinfo", "config", "print configurations"),
-		dumpFunc:          dumpFunc,
+		BaseCommandPlugin: plugins.NewBaseCommandPlugin(
+			config.Attrs.GetString("plugins.configcmd.name"),
+			config.Attrs.GetString("plugins.configcmd.group"),
+			"print configurations",
+		),
+		dumpFunc: dumpFunc,
 	}
+}
+
+func init() {
+	config.Attrs.SetDefault("plugins.configcmd.name", "confinfo")
+	config.Attrs.SetDefault("plugins.configcmd.group", "config")
 }
