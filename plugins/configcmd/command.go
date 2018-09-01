@@ -1,11 +1,9 @@
-package config
+package configcmd
 
 import (
 	"context"
 	"flag"
 	"fmt"
-
-	"encoding/json"
 
 	"github.com/MrLYC/gokit/config"
 	"github.com/MrLYC/gokit/plugins"
@@ -15,6 +13,7 @@ import (
 // Plugin :
 type Plugin struct {
 	*plugins.BaseCommandPlugin
+	dumpFunc func(config.Configuration) (string, error)
 }
 
 // Start :
@@ -27,15 +26,9 @@ func (p *Plugin) Start(conf config.Configuration) error {
 	return nil
 }
 
-// Dumps :
-func (p *Plugin) Dumps() (string, error) {
-	data, err := json.Marshal(p.Configuration)
-	return string(data), err
-}
-
 // Execute :
 func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	data, err := p.Dumps()
+	data, err := p.dumpFunc(p.Configuration)
 	if err != nil {
 		panic(err)
 	}
@@ -44,8 +37,9 @@ func (p *Plugin) Execute(cxt context.Context, f *flag.FlagSet, _ ...interface{})
 }
 
 // New :
-func New() plugins.Plugin {
+func New(dumpFunc func(config.Configuration) (string, error)) plugins.Plugin {
 	return &Plugin{
 		BaseCommandPlugin: plugins.NewBaseCommandPlugin("confinfo", "config", "print configurations"),
+		dumpFunc:          dumpFunc,
 	}
 }
