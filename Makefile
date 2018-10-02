@@ -2,7 +2,7 @@ VERSION = $(shell cat VERSION)
 
 ROOTDIR = $(shell pwd)
 APPNAME = gokit
-APPPATH = github.com/mrlyc/${APPNAME}
+APPPATH = github.com/MrLYC/${APPNAME}
 
 GOPATH ?= /tmp/gopath
 GODIR = $(shell echo "$${GOPATH%%:*}")
