@@ -1,56 +1,55 @@
-VERSION = 0.0.1
+VERSION = $(shell cat VERSION)
 
 ROOTDIR = $(shell pwd)
 APPNAME = gokit
-APPPATH = github.com/mrlyc/gokit
-GODIR = /tmp/gopath
-SRCDIR = ${GODIR}/src/${APPPATH}
-TARGET = bin/${APPNAME}
+APPPATH = github.com/mrlyc/${APPNAME}
 
-GOENV = GOPATH=${GODIR}:${GOPATH} GO15VENDOREXPERIMENT=1
+GOPATH ?= /tmp/gopath
+GODIR = $(shell echo "$${GOPATH%%:*}")
+SRCDIR = ${GODIR}/src/${APPPATH}
+
+GOENV = GOPATH=${GOPATH} GO15VENDOREXPERIMENT=1
+GOROOTDIR = $(shell cd "${SRCDIR}" && go list -f '{{.Root}}')
+PACKAGES = $(shell cd "${SRCDIR}" && go list ./...)
+SUBDIRS = $(shell cd "${SRCDIR}" && go list -f '{{.Dir}}' ./...)
+GOFILES = $(shell cd "${SRCDIR}" && go list -f '{{$$dir := .Dir}}{{range .GoFiles}}{{$$dir}}/{{.}}{{end}}' ./...)
+GOTESTCASES = $(shell cd "${SRCDIR}" && go list -f '{{$$dir := .Dir}}{{range .TestGoFiles}}{{$$dir}}/{{.}}{{end}}{{range .XTestGoFiles}}{{$$dir}}/{{.}}{{end}}' ./...)
+TOPFILES = $(wildcard *.*)
 
 GO = ${GOENV} go
 DEP = ${GOENV} dep
 
-LDFLAGS = -X ${APPPATH}/config.Version=${VERSION} -X ${APPPATH}/config.AppName=${APPNAME}
-DEBUGLDFLAGS = ${LDFLAGS} -X ${APPPATH}/config.Mode=debug
-RELEASELDFLAGS = -w ${LDFLAGS} -X ${APPPATH}/config.Mode=release
+LDFLAGS = -X ${APPPATH}/Version=${VERSION}
+DEBUGLDFLAGS = ${LDFLAGS} -X ${APPPATH}/Mode=debug
+RELEASELDFLAGS = -w ${LDFLAGS} -X ${APPPATH}/Mode=release
 
-GOFINDSH = find . -type f -name "*.go" -not -path "./vendor/*"
-GOFILES = $(shell ${GOFINDSH})
+.PHONY: .EXPORT_ALL_VARIABLES
 
-.PHONY: release
-release: ${SRCDIR}
-	${GO} build -i -ldflags="${RELEASELDFLAGS} -X ${APPPATH}/config.BuildHash=`git rev-parse HEAD`" -o ${TARGET} ${APPPATH}
-
-.PHONY: build
-build: ${SRCDIR}
-	${GO} build -i -ldflags="${DEBUGLDFLAGS}" -o ${TARGET} ${APPPATH}
+build: init .EXPORT_ALL_VARIABLES
+	${GO} install ${APPPATH}
 
 ${SRCDIR}:
-	mkdir -p bin
-	mkdir -p `dirname "${SRCDIR}"`
-	ln -s ${ROOTDIR} ${SRCDIR}
+	@mkdir -p `dirname "${SRCDIR}"`
+	@ln -s ${ROOTDIR} ${SRCDIR}
 
 .PHONY: init
-init: ${SRCDIR} update
+init: ${SRCDIR}
 
 .PHONY: update
-update: ${SRCDIR}
-	cd ${SRCDIR} && ${DEP} ensure -v
+update: ${SRCDIR} .EXPORT_ALL_VARIABLES
+	cd "${SRCDIR}" && ${DEP} ensure -v
 
-.PHONY: test
-test: ${SRCDIR}
-	$(eval package ?= $(patsubst ./%,${APPPATH}/%,$(shell find "." -name "*_test.go" -not -path "./vendor/*" -not -path "./.*" -exec dirname {} \; | uniq)))
-	${GOENV} go test ${package}
+.PHONY: gofmt
+gofmt: init .EXPORT_ALL_VARIABLES
+	@gofmt -w ${GOFILES}
 
 .PHONY: lint
-lint:
-	${GOENV} ${GOFINDSH} -exec golint -set_exit_status {} \;
+lint: init .EXPORT_ALL_VARIABLES
+	@golint ${PACKAGES}
 
-.PHONY: fmt
-fmt:
-	${GOENV} gofmt -w ${GOFILES}
+.PHONY: test
+test: init .EXPORT_ALL_VARIABLES
+	@go test ${PACKAGES}
 
 .PHONY: go-env
 go-env:
