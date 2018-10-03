@@ -9,21 +9,27 @@ import (
 
 //
 var (
-	ErrHookNotActivate = errors.New("hook not activate")
+	ErrHookNotReady = errors.New("hook not ready")
+	ErrHookBusy     = errors.New("hook is busy")
 )
 
+// HookNextFunc :
+type HookNextFunc func(context.Context) error
+
 // HookHandler :
-type HookHandler interface {
-	Run(Hooker) error
+type HookHandler func(ctx context.Context, next HookNextFunc) error
+
+type hookState struct {
+	cancelFunc context.CancelFunc
+	current    *list.Element
+	nextFunc   HookNextFunc
 }
 
 // Hook :
 type Hook struct {
-	context.Context
-	cancelFunc     context.CancelFunc
-	currentHandler *list.Element
-	lock           sync.Mutex
-	handlers       *list.List
+	*hookState
+	lock     sync.Mutex
+	handlers *list.List
 }
 
 // Hooker :
@@ -31,58 +37,50 @@ type Hooker = *Hook
 
 // Activate :
 func (h Hooker) Activate(ctx context.Context) error {
+	if h.hookState != nil {
+		return ErrHookBusy
+	}
+
 	h.lock.Lock()
-	h.Context, h.cancelFunc = context.WithCancel(ctx)
-	defer func() {
-		h.Context = nil
-		h.cancelFunc = nil
-		h.currentHandler = nil
-		h.lock.Unlock()
-	}()
+	defer h.lock.Unlock()
 
-	for h.currentHandler = h.handlers.Front(); h.currentHandler != h.handlers.Back(); {
-		handler := h.currentHandler.Value.(HookHandler)
-		err := handler.Run(h)
-		if err != nil {
-			return err
+	state := &hookState{}
+	h.hookState = state
+	ctx, state.cancelFunc = context.WithCancel(ctx)
+	state.nextFunc = func(c context.Context) error {
+		if state.current != nil {
+			handler := state.current.Value.(HookHandler)
+			state.current = state.current.Next()
+			return handler(c, state.nextFunc)
 		}
+		return nil
 	}
+	state.current = h.handlers.Front()
+	err := state.nextFunc(ctx)
 
-	return nil
-}
+	state.cancelFunc()
+	h.hookState = nil
 
-// Next :
-func (h Hooker) Next() error {
-	if h.currentHandler == nil {
-		return ErrHookNotActivate
-	}
-	h.currentHandler.Next()
-	return nil
+	return err
 }
 
 // Add :
-func (h Hooker) Add(handler HookHandler) {
+func (h Hooker) Add(handler HookHandler) error {
+	if h.hookState != nil {
+		return ErrHookBusy
+	}
+
 	h.lock.Lock()
+	defer h.lock.Unlock()
 
 	h.handlers.PushBack(handler)
 
-	h.lock.Unlock()
+	return nil
 }
 
-// Remove :
-func (h Hooker) Remove(handler HookHandler) {
-	h.lock.Lock()
-
-	var el *list.Element
-	for el = h.handlers.Front(); el != h.handlers.Back(); el.Next() {
-		if el.Value.(HookHandler) == handler {
-			break
-		}
+// NewHook : make a hook
+func NewHook() Hooker {
+	return &Hook{
+		handlers: list.New(),
 	}
-
-	if el != nil {
-		h.handlers.Remove(el)
-	}
-
-	h.lock.Unlock()
 }
